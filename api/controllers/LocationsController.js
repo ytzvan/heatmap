@@ -33,6 +33,39 @@ module.exports = {
 		}
 
 		request(options, callback);
+	},
+
+	multiple : function (req, res) {
+
+		var request = require('request');
+		console.log(sails.config.access.ACCESS_URL);
+		var url = sails.config.access.ACCESS_URL;
+		var token = sails.config.access.ACCESS_TOKEN;
+		var options = {
+		    url: url,
+		    headers: {
+		    	'Content-Type': 'application/json',	
+		        'Authorization': 'Bearer ' +token
+		    }
+		};
+
+		var q = async.queue(function (task, done) {
+		    request(task.url, function(err, res, body) {
+
+		        if (err) return done(console.log(res.statusCode));
+		        if (res.statusCode != 200) return done(console.log(res.statusCode));
+
+		        var info = JSON.parse(body);
+		        console.log(info);
+		        // ...
+		        done();
+		    });
+		}, 1);
+
+
+		q.push({ url: url}, function (err) {
+		    res.send('finished processing bar');
+		});
 	}
 };
 
