@@ -9,12 +9,14 @@
 module.exports = {
 
 	fetchData : function(req, res) {
+		var url = sails.config.access.ACCESS_URL;
+		
 		var request = require('request');
-		var token = "PUT TOKEN HERE";
+		var token = sails.config.access.ACCESS_TOKEN;
 		var options = {
-		    url: 'PUT URL HERE',
+		    url: url,
 		    headers: {
-		    		'Content-Type': 'application/json',	
+		    	'Content-Type': 'application/json',	
 		        'Authorization': 'Bearer ' +token
 		    }
 		};
@@ -24,7 +26,7 @@ module.exports = {
 		    if (!error && response.statusCode == 200) {
 		        var info = JSON.parse(body);
 		        console.log(info);
-		        console.log(response.statusCode);
+		        res.json(info);
 		    } else {
 		    	console.log(response.statusCode);
 		    }
