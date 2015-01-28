@@ -55,28 +55,23 @@ module.exports = {
 		        if (res.statusCode != 200) return done(console.log('distinto de 200: '+res.statusCode));
 
 		        var info = JSON.parse(body);
-            console.log(info.visits[0]);
-
-		        console.log(info.meta.pagination.pages);
-
-		 /*       for (var i=0; i<10; i++){
-		        	var obj = {
-		        		"id" : info.visits[i].id,
-		        		"latitude" : info.visits[i].latitude,
-		        		"longitude" : info.visits[i].longitude
-		        	}
-		        	json.push(obj);
-		        }*/
 
 		        for(var i in info.visits){
-              console.log(info.visits[i].id);
-              console.log(info.visits[i].latitude);
-              console.log(info.visits[i].longitude);
-              console.log("Save data to model HERE \n");
+              var id = info.visits[i].id;
+              var latitude = info.visits[i].latitude;
+              var longitude = info.visits[i].longitude;
+              
+              Locations.create({
+                visitId: id,
+                latitude : latitude,
+                longitude : longitude
+              }).exec(function createCB(err,created){
+                console.log('Creacion # '+i);
+                });
         		}
 
-		        done();
-		    }),5});
+		       return done();
+		    }),1});
 
 
 		q.push({url: options}, function (err) {

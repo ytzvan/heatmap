@@ -9,6 +9,19 @@ module.exports = {
 
   attributes: {
 
+
+  	visitId : {
+  		type : 'string',
+    },
+
+    latitude : {
+  		type : 'string',
+    },
+
+    longitude : {
+  		type : 'string',
+    }
+
   }
 };
 
