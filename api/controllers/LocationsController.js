@@ -38,7 +38,6 @@ module.exports = {
 	multiple : function (req, res) {
 
 		var request = require('request');
-		console.log(sails.config.access.ACCESS_URL);
 		var url = sails.config.access.ACCESS_URL;
 		var token = sails.config.access.ACCESS_TOKEN;
 		var options = {
@@ -50,22 +49,22 @@ module.exports = {
 		};
 
 		var q = async.queue(function (task, done) {
+				console.log(url);
 		    request(task.url, function(err, res, body) {
 
-		        if (err) return done(console.log(res.statusCode));
-		        if (res.statusCode != 200) return done(console.log(res.statusCode));
+		        if (err) return done(console.log('err'));
+		        if (res.statusCode != 200) return done(console.log('distinto de 200: '+res.statusCode));
 
 		        var info = JSON.parse(body);
 		        console.log(info);
-		        // ...
 		        done();
-		    });
-		}, 1);
+		    }),5});
 
 
-		q.push({ url: url}, function (err) {
-		    res.send('finished processing bar');
+		q.push({url: options}, function (err) {
+			res.send('finished processing bar');
 		});
-	}
+
+	}	
 };
 
