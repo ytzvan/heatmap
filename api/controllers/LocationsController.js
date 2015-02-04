@@ -38,15 +38,7 @@ module.exports = {
 	multiple : function (req, res) {
 
 		var request = require('request');
-		var url = sails.config.access.ACCESS_URL;
 		var token = sails.config.access.ACCESS_TOKEN;
-		var options = {
-		    url: url,
-		    headers: {
-		    	'Content-Type': 'application/json',	
-		        'Authorization': 'Bearer ' +token
-		    }
-		};
 
 		var q = async.queue(function (task, done) {
 		    request(task.url, function(err, res, body) {
@@ -56,28 +48,45 @@ module.exports = {
 
 		        var info = JSON.parse(body);
 
+		        var rows = info.meta.pagination.pages;
+
 		        for(var i in info.visits){
               var id = info.visits[i].id;
               var latitude = info.visits[i].latitude;
               var longitude = info.visits[i].longitude;
               
-              Locations.create({
-                visitId: id,
+              Locations.findOrCreate({visitId:id},
+              	{visitId: id,
                 latitude : latitude,
-                longitude : longitude
-              }).exec(function createCB(err,created){
-                console.log('Creacion # '+i);
+                longitude : longitude})
+              .exec(function createFindCB(err,created){
+               //console.log('Creacion # '+created.visitId+' '+created.latitude+' '+created.longitude);
                 });
         		}
-
-		       return done();
+						return done();
 		    }),1});
 
 
-		q.push({url: options}, function (err) {
-			res.send('finished processing bar');
-		});
+			for (var page = 1; page<10; page++) {
 
-	}	
+			var url = sails.config.access.ACCESS_URL;	
+			url = url+"?page="+page;
+			console.log(url);
+
+			var options = {
+			    url: url,
+			    headers: {
+			    	'Content-Type': 'application/json',	
+			        'Authorization': 'Bearer ' +token
+			    }
+			};
+
+
+			q.push({url: options}, function (err) {
+				res.send("end");
+			});
+
+			}
+	}
 };
 
