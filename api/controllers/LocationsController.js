@@ -35,6 +35,13 @@ module.exports = {
 		request(options, callback);
 	},
 
+	all : function(req, res) {
+		Locations.find()
+		.exec(function findCB(err,data){
+               res.send(data);
+        });
+	},
+
 	multiple : function (req, res) {
 
 		var request = require('request');
