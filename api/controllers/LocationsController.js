@@ -27,21 +27,21 @@ module.exports = {
 		        'Authorization': 'Bearer ' +token
 		    }
 		};
-		// var pages = 0;
+		var pages = 0;
 
-		// function callback(error, response, body) {
+		function callback(error, response, body) {
 
-		//     if (!error && response.statusCode == 200) {
-		//         var info = JSON.parse(body);
-		//         console.log(info.meta.pagination.pages);
-		//         pages = parseInt(info.meta.pagination.pages); //Save the # of pages
-		//         loop(); //Call the loop function and start making request based on the n of pages
-		//     } else {
-		//     	console.log(response.statusCode);
-		//     }
-		// }
+		    if (!error && response.statusCode == 200) {
+		        var info = JSON.parse(body);
+		        console.log(info.meta.pagination.pages);
+		        pages = parseInt(info.meta.pagination.pages); //Save the # of pages
+		        loop(); //Call the loop function and start making request based on the n of pages
+		    } else {
+		    	console.log(response.statusCode);
+		    }
+		}
 
-		// request(options, callback);
+		request(options, callback);
 
 
 		var q = async.queue(function (task, done) {
@@ -65,19 +65,28 @@ module.exports = {
 				return done();
 		    }),5});
 
-			// function loop () {
-				for (var page = 1; page<=10; page++) { //The for loop make the request
+			 function loop () {
+				for (var page = 1; page<=pages; page++) { //The for loop make the request
+
 
 					var url = sails.config.access.ACCESS_URL;	
 					url = url+"?page="+page;
 					console.log(url);
+
+					var options = {
+					    url: url,
+					    headers: {
+					    	'Content-Type': 'application/json',	
+					        'Authorization': 'Bearer ' +token
+					    }
+					};
 
 					q.push({url: options}, function (err) { // The async worker 
 						res.send("end");
 					});
 
 				}
-			// }
+			 }
 	}
 };
 
