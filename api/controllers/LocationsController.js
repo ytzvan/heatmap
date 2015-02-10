@@ -8,9 +8,16 @@
 
 module.exports = {
 
-	fetchData : function(req, res) {
+	all : function(req, res) {
+		Locations.find()
+		.sort('createdAt ASC')
+		.exec(function findCB(err,data){
+               res.send(data);
+        });
+	},
+
+	multiple : function (req, res) {
 		var url = sails.config.access.ACCESS_URL;
-		
 		var request = require('request');
 		var token = sails.config.access.ACCESS_TOKEN;
 		var options = {
@@ -20,32 +27,22 @@ module.exports = {
 		        'Authorization': 'Bearer ' +token
 		    }
 		};
+		// var pages = 0;
 
-		function callback(error, response, body) {
+		// function callback(error, response, body) {
 
-		    if (!error && response.statusCode == 200) {
-		        var info = JSON.parse(body);
-		        console.log(info);
-		        res.json(info);
-		    } else {
-		    	console.log(response.statusCode);
-		    }
-		}
+		//     if (!error && response.statusCode == 200) {
+		//         var info = JSON.parse(body);
+		//         console.log(info.meta.pagination.pages);
+		//         pages = parseInt(info.meta.pagination.pages); //Save the # of pages
+		//         loop(); //Call the loop function and start making request based on the n of pages
+		//     } else {
+		//     	console.log(response.statusCode);
+		//     }
+		// }
 
-		request(options, callback);
-	},
+		// request(options, callback);
 
-	all : function(req, res) {
-		Locations.find()
-		.exec(function findCB(err,data){
-               res.send(data);
-        });
-	},
-
-	multiple : function (req, res) {
-
-		var request = require('request');
-		var token = sails.config.access.ACCESS_TOKEN;
 
 		var q = async.queue(function (task, done) {
 		    request(task.url, function(err, res, body) {
@@ -55,45 +52,32 @@ module.exports = {
 
 		        var info = JSON.parse(body);
 
-		        var rows = info.meta.pagination.pages;
-
-		        for(var i in info.visits){
-              var id = info.visits[i].id;
-              var latitude = info.visits[i].latitude;
-              var longitude = info.visits[i].longitude;
-              
-              Locations.findOrCreate({visitId:id},
-              	{visitId: id,
-                latitude : latitude,
-                longitude : longitude})
-              .exec(function createFindCB(err,created){
-               //console.log('Creacion # '+created.visitId+' '+created.latitude+' '+created.longitude);
-                });
+		      for(var i in info.visits){ //Add data to model 
+	              
+	              Locations.findOrCreate({visitId:info.visits[i].id}, //Create or skip the creation of the data based on the visitID
+	              	{visitId: info.visits[i].id,
+	                latitude : info.visits[i].latitude,
+	                longitude : info.visits[i].longitude})
+	              .exec(function createFindCB(err,created){
+	               console.log('Creacion # '+created.visitId+' '+created.latitude+' '+created.longitude + ' ' +created.id);
+	                });
         		}
-						return done();
-		    }),1});
+				return done();
+		    }),5});
 
+			// function loop () {
+				for (var page = 1; page<=10; page++) { //The for loop make the request
 
-			for (var page = 1; page<10; page++) {
+					var url = sails.config.access.ACCESS_URL;	
+					url = url+"?page="+page;
+					console.log(url);
 
-			var url = sails.config.access.ACCESS_URL;	
-			url = url+"?page="+page;
-			console.log(url);
+					q.push({url: options}, function (err) { // The async worker 
+						res.send("end");
+					});
 
-			var options = {
-			    url: url,
-			    headers: {
-			    	'Content-Type': 'application/json',	
-			        'Authorization': 'Bearer ' +token
-			    }
-			};
-
-
-			q.push({url: options}, function (err) {
-				res.send("end");
-			});
-
-			}
+				}
+			// }
 	}
 };
 
